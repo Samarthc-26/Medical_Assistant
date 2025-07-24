@@ -1,37 +1,50 @@
-import chromadb
 import csv
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
-client = chromadb.Client()
-collection = client.get_or_create_collection(name='medical_notes')
+# Load sentence transformer model for embedding
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
+# Initialize FAISS index (assumes 384-dim from above model)
+dimension = 384
+index = faiss.IndexFlatL2(dimension)
+
+# Metadata store
+metadata_store = {}  # key: vector index, value: metadata dict
+vector_id = 0
 
 def ingest_notes(csv_path: str):
-    """Ingest medical notes from a CSV file into ChromaDB"""
+    global vector_id
     with open(csv_path, "r") as file:
         reader = csv.DictReader(file)
+        vectors = []
         for row in reader:
-            patient_id = row["patient_id"]
             symptoms = row["symptoms"]
-            collection.add(
-                documents=[symptoms],
-                metadatas=[row],
-                ids=[patient_id]
-            )
+            embedding = model.encode(symptoms)
+            vectors.append(embedding)
 
-ingest_notes("healthcare_patient_records.csv")
+            # Save metadata
+            metadata_store[vector_id] = {
+                "Symptoms": symptoms,
+                "Diagnosis": row.get("diagnosis", "N/A"),
+                "Treatment": row.get("treatment", "N/A"),
+                "Doctor Notes": row.get("doctor_notes", "N/A")
+            }
+            vector_id += 1
 
-def query_notes(symptoms: str, top_k: int = 1):
-    """Query medical notes based on input symptoms"""
-    results = collection.query(query_texts=[symptoms], n_results=top_k)
+        # Convert list to numpy array and add to FAISS
+        vectors_np = np.array(vectors).astype("float32")
+        index.add(vectors_np)
+ingest_notes('healthcare_patient_records.csv')
+
+def query_notes(symptom_query: str, top_k: int = 1):
+    embedding = model.encode([symptom_query]).astype("float32")
+    distances, indices = index.search(embedding, top_k)
 
     output = []
-    for doc, metadata in zip(results["documents"][0], results["metadatas"][0]):
-        result = {
-            "Symptoms": doc,
-            "Diagnosis": metadata.get("diagnosis", "N/A"),
-            "Treatment": metadata.get("treatment", "N/A"),
-            "Doctor Notes": metadata.get("doctor_notes", "N/A")
-        }
-        output.append(result)
+    for idx in indices[0]:
+        if idx in metadata_store:
+            output.append(metadata_store[idx])
 
     return output
