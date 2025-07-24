@@ -1,16 +1,17 @@
-# 🩺 Medical Notes Assistant (ChromaDB + Streamlit)
+# 🩺 Medical Notes Assistant (FAISS + Streamlit)
 
-This project is a **Retrieval-Based Medical Case Assistant** powered by **ChromaDB** and **Streamlit**.  
-It allows you to query a database of medical notes using symptoms and retrieve the most similar cases from the vector database.
+This project is a **Retrieval-Based Medical Case Assistant** powered by **FAISS** and **Streamlit**.  
+It enables doctors to query a hospital's database of past patient cases and retrieve the most similar cases based on symptoms using vector similarity search.
 
 ---
 
 ## 🚀 Features
 
-- 📁 Ingests medical case notes from a CSV file
-- 🔍 Queries similar patient cases using symptom matching
-- 🧠 Uses ChromaDB for fast vector-based retrieval
-- 🖥️ Streamlit UI for interactive querying
+- 📁 Loads medical case notes from a hospital database (CSV format)
+- 🔍 Queries most relevant historical patient cases using symptom descriptions
+- 🧠 Uses FAISS for high-performance vector similarity retrieval
+- 🖥️ Streamlit interface for intuitive, real-time access
+- 🩺 Helps doctors gain insights from previous diagnoses and treatments
 
 ---
 
@@ -27,3 +28,4 @@ It allows you to query a database of medical notes using symptoms and retrieve t
 ```bash
 git clone https://github.com/yourusername/medical-notes-assistant.git
 cd medical-notes-assistant
+
