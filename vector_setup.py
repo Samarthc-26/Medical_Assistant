@@ -1,4 +1,3 @@
-# vector_setup.py
 import chromadb
 import csv
 
@@ -20,6 +19,7 @@ def ingest_notes(csv_path: str):
             )
 
 ingest_notes("healthcare_patient_records.csv")
+
 def query_notes(symptoms: str, top_k: int = 1):
     """Query medical notes based on input symptoms"""
     results = collection.query(query_texts=[symptoms], n_results=top_k)
